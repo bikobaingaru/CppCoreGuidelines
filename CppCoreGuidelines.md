@@ -1,6 +1,6 @@
 # <a name="main"></a>C++ Core Guidelines
 
-October 23, 2017
+November 27, 2017
 
 
 Editors:
@@ -82,7 +82,7 @@ You can sample rules for specific language features:
 * `concept`:
 [rules](#SS-concepts) --
 [in generic programming](#Rt-raise) --
-[template arguments](#RT-concepts) --
+[template arguments](#Rt-concepts) --
 [semantics](#Rt-low)
 * constructor:
 [invariant](#Rc-struct) --
@@ -679,7 +679,7 @@ You don't need to write error handlers for errors caught at compile time.
     for (Int i = 1; i; i <<= 1)
         ++bits;
     if (bits < 32)
-        cerr << "Int too small\n"
+        cerr << "Int too small\n";
 
 This example fails to achieve what it is trying to achieve (because overflow is undefined) and should be replaced with a simple `static_assert`:
 
@@ -1108,7 +1108,7 @@ Instead, we could use `vector`:
 ##### Note
 
 The standards library and the GSL are examples of this philosophy.
-For example, instead of messing with the arrays, unions, cast, tricky lifetime issues, `gsl::owner`, etc.
+For example, instead of messing with the arrays, unions, cast, tricky lifetime issues, `gsl::owner`, etc.,
 that are needed to implement key abstractions, such as `vector`, `span`, `lock_guard`, and `future`, we use the libraries
 designed and implemented by people with more time and expertise than we usually have.
 Similarly, we can and should design and implement more specialized libraries, rather than leaving the users (often ourselves)
@@ -1190,7 +1190,7 @@ Having good (easy-to-understand, encouraging efficient use, not error-prone, sup
 Interface rule summary:
 
 * [I.1: Make interfaces explicit](#Ri-explicit)
-* [I.2: Avoid global variables](#Ri-global)
+* [I.2: Avoid non-`const` global variables](#Ri-global)
 * [I.3: Avoid singletons](#Ri-singleton)
 * [I.4: Make interfaces precisely and strongly typed](#Ri-typed)
 * [I.5: State preconditions (if any)](#Ri-pre)
@@ -1249,7 +1249,7 @@ Reporting through non-local variables (e.g., `errno`) is easily ignored. For exa
     // don't: no test of printf's return value
     fprintf(connection, "logging: %d %d %d\n", x, y, s);
 
-What if the connection goes down so that no logging output is produced? See I.??.
+What if the connection goes down so that no logging output is produced? See I.???.
 
 **Alternative**: Throw an exception. An exception cannot be ignored.
 
@@ -1264,7 +1264,7 @@ Functions can be template functions and sets of functions can be classes or clas
 * (Simple) A function should not make control-flow decisions based on the values of variables declared at namespace scope.
 * (Simple) A function should not write to variables declared at namespace scope.
 
-### <a name="Ri-global"></a>I.2: Avoid global variables
+### <a name="Ri-global"></a>I.2: Avoid non-`const` global variables
 
 ##### Reason
 
@@ -2240,7 +2240,7 @@ So, we write a class
         Istream() { }
         Istream(zstring p) :owned{true}, inp{new ifstream{p}} {}            // read from file
         Istream(zstring p, Opt) :owned{true}, inp{new istringstream{p}} {}  // read from command line
-        ~Itream() { if (owned) delete inp; }
+        ~Istream() { if (owned) delete inp; }
         operator istream& () { return *inp; }
     private:
         bool owned = false;
@@ -2314,7 +2314,7 @@ Other function rules:
 * [F.54: If you capture `this`, capture all variables explicitly (no default capture)](#Rf-this-capture)
 * [F.55: Don't use `va_arg` arguments](#F-varargs)
 
-Functions have strong similarities to lambdas and function objects so see also Section ???.
+Functions have strong similarities to lambdas and function objects so see also [C.lambdas: Function objects and lambdas](#SS-lambdas).
 
 ## <a name="SS-fct-def"></a>F.def: Function definitions
 
@@ -3565,7 +3565,7 @@ The language guarantees that a `T&` refers to an object, so that testing for `nu
         array<wheel, 4> w;
         // ...
     public:
-        wheel& get_wheel(size_t i) { Expects(i < 4); return w[i]; }
+        wheel& get_wheel(size_t i) { Expects(i < w.size()); return w[i]; }
         // ...
     };
 
@@ -3835,9 +3835,9 @@ It's confusing. Writing `[=]` in a member function appears to capture by value, 
             // [=,this] and [&,this] are not much better, and confusing
 
             x = 42;
-            lambda(); // calls use(42);
+            lambda(); // calls use(0, 42);
             x = 43;
-            lambda(); // calls use(43);
+            lambda(); // calls use(0, 43);
 
             // ...
 
@@ -6530,6 +6530,7 @@ Such as on an ABI (link) boundary.
 ##### Example
 
     struct Device {
+        virtual ~Device() = default;
         virtual void write(span<const char> outbuf) = 0;
         virtual void read(span<char> inbuf) = 0;
     };
@@ -11826,7 +11827,7 @@ Unfortunately, most invalid pointer problems are harder to spot and harder to fi
 
 There is a huge amount of such code.
 Most works -- after lots of testing -- but in isolation it is impossible to tell whether `p` could be the `nullptr`.
-Consequently, it this is also a major source of errors.
+Consequently, this is also a major source of errors.
 There are many approaches to dealing with this potential problem:
 
     void f1(int* p) // deal with nullptr
@@ -19060,7 +19061,7 @@ Synchronizing `iostreams` with `printf-style` I/O can be costly.
 
 ### <a name="Rio-endl"></a>SL.io.50: Avoid `endl`
 
-### Reason
+##### Reason
 
 The `endl` manipulator is mostly equivalent to `'\n'` and `"\n"`;
 as most commonly used it simply slows down output by doing redundant `flush()`s.
